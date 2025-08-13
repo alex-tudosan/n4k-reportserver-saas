@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: reports-server-metrics
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - kyverno
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: reports-server
+  endpoints:
+  - port: https
+    scheme: https
+    path: /metrics
+    interval: 30s
+    tlsConfig:
+      insecureSkipVerify: true
+

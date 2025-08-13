@@ -1,0 +1,6 @@
+# Local clones / large externals
+kyverno-policies/
+
+# macOS
+.DS_Store
+
