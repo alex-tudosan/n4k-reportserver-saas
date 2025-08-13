@@ -46,6 +46,7 @@ helm upgrade --install kyverno nirmata/kyverno \
 # 6) Apply ServiceMonitors so Prometheus scrapes Kyverno and Reports-Server
 kubectl apply -f /Users/anujramola/Devtest/Project_Workflow/reports-server-servicemonitor.yaml
 kubectl apply -f /Users/anujramola/Devtest/Project_Workflow/kyverno-servicemonitor.yaml
+kubectl apply -f /Users/anujramola/Devtest/Project_Workflow/reports-server-etcd-servicemonitor.yaml
 kubectl -n monitoring get servicemonitors
 
 # 7) Post-install etcd size (after N4K + Reports Server)
@@ -63,9 +64,12 @@ kubectl kustomize kyverno-policies/pod-security/baseline | kubectl apply -f -
 # 9) Verify reports
 kubectl get polr -A
 
-# 9) Hourly request volume (Prometheus - example query)
-# increase(apiserver_request_duration_seconds_count{group=~"reports.kyverno.io|wgpolicyk8s.io",resource=~".*reports.*"}[1h])
+# 10) Monitoring views
+# - Kyverno: Import the Grafana dashboard JSON in this repo (`kyverno-dashboard.json`).
+#   Grafana → Dashboards → Import → Upload JSON file → select kyverno-dashboard.json.
+# - etcd (Kubernetes control plane): use the etcdctl endpoint status commands above (steps 3 and 7).
+# - etcd metrics: under investigation for this setup.
 
-# 10) Teardown (optional)
+# 11) Teardown (optional)
 kind delete cluster --name kyverno-reports-test
 
