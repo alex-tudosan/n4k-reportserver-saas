@@ -1,0 +1,58 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: kyverno-scale-test
+  region: us-west-2
+  version: "1.29"
+
+# Control plane specifications
+controlPlane:
+  instanceType: m5.xlarge  # 4 vCPU, 16 GB RAM
+  desiredCapacity: 3
+  maxPodsPerNode: 110
+  
+# Node groups for workload pods
+managedNodeGroups:
+  - name: workload-nodes
+    instanceType: m5.2xlarge  # 8 vCPU, 32 GB RAM
+    desiredCapacity: 20
+    maxPodsPerNode: 110
+    volumeSize: 100
+    labels:
+      role: workload
+    tags:
+      k8s.io/cluster-autoscaler/node-template/label/role: workload
+
+  - name: monitoring-nodes
+    instanceType: m5.large  # 2 vCPU, 8 GB RAM
+    desiredCapacity: 3
+    maxPodsPerNode: 50
+    volumeSize: 50
+    labels:
+      role: monitoring
+    taints:
+      - key: dedicated
+        value: monitoring
+        effect: NoSchedule
+
+# Add-ons
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+
+# IAM roles for service accounts
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: kyverno-sa
+        namespace: kyverno
+      wellKnownPolicies:
+        awsLoadBalancerController: true
