@@ -1,0 +1,44 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: kyverno-test-phase1
+  region: us-west-2
+  version: "1.29"
+
+# Control plane specifications (minimal for testing)
+controlPlane:
+  instanceType: t3a.medium  # 2 vCPU, 4 GB RAM
+  desiredCapacity: 1
+  maxPodsPerNode: 50
+  
+# Node groups for workload pods (small scale for Phase 1)
+managedNodeGroups:
+  - name: workload-nodes
+    instanceType: t3a.medium  # 2 vCPU, 4 GB RAM
+    desiredCapacity: 2
+    maxPodsPerNode: 50
+    volumeSize: 20
+    labels:
+      role: workload
+    tags:
+      k8s.io/cluster-autoscaler/node-template/label/role: workload
+
+# Add-ons (minimal for Phase 1)
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+
+# IAM roles for service accounts
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: kyverno-sa
+        namespace: kyverno
+      wellKnownPolicies:
+        awsLoadBalancerController: true
