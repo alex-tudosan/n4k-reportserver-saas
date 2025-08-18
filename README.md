@@ -6,7 +6,7 @@ This repository provides a **systematic, phased approach** to test Kyverno n4k (
 
 ## 📖 Documentation
 
-### **📋 [COMPREHENSIVE_GUIDE.md](COMPREHENSIVE_GUIDE.md)** - **START HERE**
+### **📋 [COMPREHENSIVE_GUIDE.md](COMPREHENSIVE_GUIDE.md)** - **Complete Technical Guide**
 
 This is your **single source of truth** for everything you need to know:
 - ✅ **Quick Start** - Phase 1 automated setup
@@ -16,6 +16,15 @@ This is your **single source of truth** for everything you need to know:
 - ✅ **Troubleshooting** - Common issues and solutions
 - ✅ **Cost Estimation** - Monthly costs for each phase
 - ✅ **Load Testing** - Production-scale testing scripts
+
+### **📖 [SIMPLE_GUIDE.md](SIMPLE_GUIDE.md)** - **Plain Language Guide**
+
+Perfect for beginners or anyone who wants to understand **what, why, and how**:
+- 🎯 **What we're doing** - Simple explanations of each step
+- 🤔 **Why we're doing it** - Clear reasoning for every action
+- ✅ **What should happen** - Expected results for each step
+- 🔍 **What to check** - How to verify everything is working
+- 🛠️ **Common problems** - Simple solutions to typical issues
 
 ## 🚀 Quick Start
 
