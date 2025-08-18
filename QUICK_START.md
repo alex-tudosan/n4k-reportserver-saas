@@ -1,57 +1,53 @@
 # Quick Start Reference Card
 
-## 🚀 One-Command Setup (After Prerequisites)
+## 🎯 **Recommended Approach: Start with Phase 1**
 
+This repository provides a **systematic, phased testing approach** for Kyverno n4k + Reports Server:
+
+- **Phase 1**: Small-scale EKS testing (~$113/month) - **START HERE**
+- **Phase 2**: Medium-scale testing (~$423/month)
+- **Phase 3**: Production-scale testing (~$2,773/month)
+
+## 🚀 **Phase 1: Quick Start (Recommended)**
+
+### Prerequisites
 ```bash
-# 1. Start Docker and wait 30 seconds
-open -a Docker && sleep 30
+# Install required tools
+brew install awscli eksctl kubectl helm jq
 
-# 2. Create cluster
-kind create cluster --config kind-config.yaml --wait 600s
-
-# 3. Install monitoring
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
-  -n monitoring --create-namespace \
-  --set grafana.service.type=NodePort --set grafana.service.nodePort=30001 \
-  --set prometheus.service.type=NodePort --set prometheus.service.nodePort=30000
-
-# 4. Install Reports Server
-helm repo add rs https://nirmata.github.io/reports-server/
-helm upgrade --install reports-server rs/reports-server \
-  --namespace kyverno --create-namespace --version 0.2.3
-
-# 5. Install Kyverno n4k
-helm repo add nirmata https://nirmata.github.io/kyverno-charts/
-helm upgrade --install kyverno nirmata/kyverno \
-  --namespace kyverno --create-namespace --version 3.4.7
-
-# 6. Setup monitoring
-kubectl apply -f reports-server-servicemonitor.yaml
-kubectl apply -f kyverno-servicemonitor.yaml
-kubectl apply -f reports-server-etcd-servicemonitor.yaml
-
-# 7. Install policies
-git clone --depth 1 https://github.com/nirmata/kyverno-policies.git
-kubectl kustomize kyverno-policies/pod-security/baseline | kubectl apply -f -
-
-# 8. Test
-kubectl apply -f baseline-violations-pod.yaml
-kubectl get polr -A
+# Configure AWS
+aws configure
+export AWS_REGION=us-west-2
 ```
 
-## 🔑 Access Credentials
+### One-Command Setup
+```bash
+# 1. Setup Phase 1 environment (2x t3a.medium nodes)
+./phase1-setup.sh
+
+# 2. Run comprehensive test cases
+./phase1-test-cases.sh
+
+# 3. Monitor performance (optional)
+./phase1-monitor.sh
+
+# 4. Cleanup when done
+./phase1-cleanup.sh
+```
+
+## 🔑 **Phase 1 Access Credentials**
 
 ```bash
 # Get Grafana password
 kubectl -n monitoring get secret monitoring-grafana -o jsonpath='{.data.admin-password}' | base64 -d ; echo
 
-# Access URLs
-echo "Grafana: http://localhost:30001 (admin/[password])"
-echo "Prometheus: http://localhost:30000"
+# Access URLs (after port-forward)
+kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80
+echo "Grafana: http://localhost:3000 (admin/[password])"
+echo "Prometheus: kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090"
 ```
 
-## ✅ Verification Commands
+## ✅ **Phase 1 Verification Commands**
 
 ```bash
 # Check all components are running
@@ -65,27 +61,63 @@ kubectl get polr -A
 
 # Check monitoring is working
 kubectl -n monitoring get servicemonitors
+
+# Check cluster resources
+kubectl get nodes
+kubectl top nodes
 ```
 
-## 🧹 Cleanup
+## 🧹 **Phase 1 Cleanup**
 
 ```bash
-kind delete cluster --name kyverno-reports-test
+# Complete cleanup with options
+./phase1-cleanup.sh
+
+# Or manual cleanup
+kubectl delete namespace kyverno --ignore-not-found=true
+kubectl delete namespace monitoring --ignore-not-found=true
+eksctl delete cluster --name kyverno-test-phase1 --region us-west-2
 ```
 
-## 📊 What You'll See
+## 📊 **Phase 1 What You'll See**
 
-- **Grafana Dashboard**: Import `kyverno-dashboard.json` for comprehensive metrics
+- **19 Test Cases**: Comprehensive validation across 7 categories
+- **Grafana Dashboard**: Import `kyverno-dashboard.json` for metrics
 - **Policy Reports**: View violations at `kubectl get polr -A`
 - **Performance Metrics**: Monitor latency, throughput, and resource usage
-- **Storage Monitoring**: Track etcd usage for both Kubernetes and Reports Server
+- **Storage Monitoring**: Track etcd usage for Reports Server
+- **Resource Usage**: Monitor 2x t3a.medium nodes (~110 pods capacity)
 
-## 🆘 Quick Troubleshooting
+## 🆘 **Phase 1 Quick Troubleshooting**
 
 | Problem | Solution |
 |---------|----------|
-| Docker not running | `open -a Docker && sleep 30` |
+| AWS credentials not configured | `aws configure` |
+| eksctl not installed | `brew install eksctl` |
+| Cluster creation fails | Check AWS region and permissions |
 | Helm fails | `helm repo update` |
-| Pods pending | Check Docker resources |
-| Can't access Grafana | Check port 30001 isn't blocked |
+| Pods pending | Check node resources |
+| Can't access Grafana | Use port-forward instead of NodePort |
 | No reports | Wait 1-2 minutes for policies to activate |
+
+## 🚀 **Next Steps After Phase 1**
+
+### Phase 2: Medium-Scale Testing
+```bash
+# After Phase 1 success, proceed to Phase 2
+# Follow EKS_MIGRATION_GUIDE.md for Phase 2 specifications
+# Expected cost: ~$423/month
+```
+
+### Phase 3: Production-Scale Testing
+```bash
+# After Phase 2 validation, proceed to Phase 3
+# Follow EKS_MIGRATION_GUIDE.md for Phase 3 specifications
+# Expected cost: ~$2,773/month
+```
+
+## 📋 **Documentation**
+
+- **EKS_MIGRATION_GUIDE.md**: Complete phased testing approach
+- **TESTING_APPROACH.md**: Systematic testing strategy
+- **IMPLEMENTATION_GUIDE.md**: Detailed KIND cluster setup
